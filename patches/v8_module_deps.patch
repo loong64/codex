@@ -7,7 +7,7 @@ diff --git a/orig/v8-15.2.124.1/MODULE.bazel b/mod/v8-15.2.124.1/MODULE.bazel
 index b8bf8bd..573f463 100644
 --- a/orig/v8-15.2.124.1/MODULE.bazel
 +++ b/mod/v8-15.2.124.1/MODULE.bazel
-@@ -8,193 +8,67 @@ bazel_dep(name = "rules_cc", version = "0.2.17")
+@@ -8,193 +8,69 @@ bazel_dep(name = "rules_cc", version = "0.2.17")
  bazel_dep(name = "rules_python", version = "1.7.0")
  bazel_dep(name = "platforms", version = "1.0.0")
  bazel_dep(name = "abseil-cpp", version = "20250814.1")
@@ -196,6 +196,8 @@ index b8bf8bd..573f463 100644
 -    toolchain_identifier = "local_clang",
 +http_archive(
 +    name = "simdutf",
++    patch_args = ["-p1"],
++    patches = ["@v8//:bazel/simdutf-loongarch-hwcap.patch"],
 +    build_file_content = 'load("@rules_cc//cc:defs.bzl", "cc_library")\n\ncc_library(\n    name = "simdutf",\n    srcs = ["src/simdutf.cpp"],\n    hdrs = glob(["include/**/*.h"]),\n    textual_hdrs = glob(["src/**/*.h", "src/**/*.cpp"], exclude = ["src/simdutf.cpp"]),\n    copts = ["-std=c++20"],\n    include_prefix = "third_party/simdutf",\n    includes = ["include", "src"],\n    strip_include_prefix = "include",\n    visibility = ["//visibility:public"],\n)\n',
 +    sha256 = "0180de81a1dd48a87b8c0442ffa81734f3db91a7350914107a449935124e3c6f",
 +    strip_prefix = "simdutf-7.7.0",

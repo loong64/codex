@@ -11,7 +11,7 @@ bazel_dep(name = "windows_support", version = "0.2.0")
 
 # Patch hermetic LLVM for Codex's custom libc++ and Windows gnullvm runtime
 # needs that have not landed upstream.
-single_version_override(
+archive_override(
     module_name = "llvm",
     patch_strip = 1,
     patches = [
@@ -19,6 +19,9 @@ single_version_override(
         "//patches:llvm_windows_arm64_powl.patch",
         "//patches:llvm_windows_mingw_compat.patch",
     ],
+    sha256 = "c8af904d4ca86e1dfb6f77397badb3bfbb005f792ca8f9a55263456c77bab41d",
+    strip_prefix = "hermetic-llvm-204f5948aa0ae9e7036f737494cd270cf0d40bdf",
+    urls = ["https://github.com/loong64/hermetic-llvm/archive/204f5948aa0ae9e7036f737494cd270cf0d40bdf.tar.gz"],
 )
 
 # Preserve case-only SDK aliases when native Windows repository setup feeds
@@ -321,6 +324,7 @@ crate.from_cargo(
         # MSVC names while targeting the GNU toolchain.
         "aarch64-pc-windows-msvc",
         "aarch64-pc-windows-gnullvm",
+        "loongarch64-unknown-linux-musl",
         "x86_64-unknown-linux-gnu",
         "x86_64-unknown-linux-musl",
         "x86_64-apple-darwin",
@@ -562,6 +566,7 @@ crate.annotation(
         "aarch64-pc-windows-msvc": ["v8_enable_sandbox"],
         "aarch64-unknown-linux-gnu": ["v8_enable_sandbox"],
         "aarch64-unknown-linux-musl": ["v8_enable_sandbox"],
+        "loongarch64-unknown-linux-musl": ["v8_enable_sandbox"],
         "x86_64-apple-darwin": ["v8_enable_sandbox"],
         "x86_64-pc-windows-gnullvm": ["v8_enable_sandbox"],
         "x86_64-pc-windows-msvc": ["v8_enable_sandbox"],
@@ -776,6 +781,7 @@ archive_override(
     patches = [
         "//patches:v8_module_deps.patch",
         "//patches:v8_bazel_rules.patch",
+        "//patches:v8_loongarch64_bazel.patch",
         "//patches:v8_source_portability.patch",
         "//patches:v8_array_sort_elements_kind.patch",
     ],

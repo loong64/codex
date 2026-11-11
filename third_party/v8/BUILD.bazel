@@ -1,8 +1,30 @@
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@rules_cc//cc:cc_static_library.bzl", "cc_static_library")
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load(":loongarch64.bzl", "loongarch64_release_pairs")
 
 package(default_visibility = ["//visibility:public"])
+
+loongarch64_release_pairs()
+
+# Match the glibc 2.36 baseline of @llvm//platforms:linux_loongarch64.
+config_setting(
+    name = "platform_loongarch64_unknown_linux_gnu",
+    constraint_values = [
+        "@platforms//cpu:loongarch64",
+        "@platforms//os:linux",
+        "@llvm//constraints/libc:gnu.2.36",
+    ],
+)
+
+config_setting(
+    name = "platform_loongarch64_unknown_linux_musl",
+    constraint_values = [
+        "@platforms//cpu:loongarch64",
+        "@platforms//os:linux",
+        "@llvm//constraints/libc:musl",
+    ],
+)
 
 config_setting(
     name = "platform_aarch64_unknown_linux_musl",
@@ -76,6 +98,8 @@ alias(
         "@rules_rs//rs/platforms/config:aarch64-pc-windows-msvc": ":v8_152_2_0_aarch64_pc_windows_msvc",
         "@rules_rs//rs/platforms/config:aarch64-unknown-linux-gnu": ":v8_152_2_0_aarch64_unknown_linux_gnu_bazel",
         ":platform_aarch64_unknown_linux_musl": ":v8_152_2_0_aarch64_unknown_linux_musl_release_base",
+        ":platform_loongarch64_unknown_linux_gnu": ":v8_152_2_0_loongarch64_unknown_linux_gnu_release",
+        ":platform_loongarch64_unknown_linux_musl": ":v8_152_2_0_loongarch64_unknown_linux_musl_release",
         "@rules_rs//rs/platforms/config:x86_64-apple-darwin": ":v8_152_2_0_x86_64_apple_darwin_bazel",
         "@rules_rs//rs/platforms/config:x86_64-pc-windows-gnullvm": ":v8_152_2_0_x86_64_pc_windows_gnullvm",
         "@rules_rs//rs/platforms/config:x86_64-pc-windows-msvc": ":v8_152_2_0_x86_64_pc_windows_msvc",
@@ -93,6 +117,8 @@ alias(
         "@rules_rs//rs/platforms/config:aarch64-pc-windows-msvc": ":src_binding_release_aarch64_pc_windows_msvc_152_2_0_release",
         "@rules_rs//rs/platforms/config:aarch64-unknown-linux-gnu": ":src_binding_release_aarch64_unknown_linux_gnu_152_2_0_release",
         ":platform_aarch64_unknown_linux_musl": ":src_binding_release_aarch64_unknown_linux_musl_152_2_0_release",
+        ":platform_loongarch64_unknown_linux_gnu": ":src_binding_release_loongarch64_unknown_linux_gnu_152_2_0_release",
+        ":platform_loongarch64_unknown_linux_musl": ":src_binding_release_loongarch64_unknown_linux_musl_152_2_0_release",
         "@rules_rs//rs/platforms/config:x86_64-apple-darwin": ":src_binding_release_x86_64_apple_darwin_152_2_0_release",
         "@rules_rs//rs/platforms/config:x86_64-pc-windows-gnullvm": ":src_binding_release_x86_64_pc_windows_gnullvm_152_2_0_release",
         "@rules_rs//rs/platforms/config:x86_64-pc-windows-msvc": ":src_binding_release_x86_64_pc_windows_msvc_152_2_0_release",
@@ -129,6 +155,7 @@ cc_library(
     name = "rusty_v8_custom_libcxx_headers",
     defines = select({
         ":platform_aarch64_unknown_linux_musl": ["ANDROID_HOST_MUSL"],
+        ":platform_loongarch64_unknown_linux_musl": ["ANDROID_HOST_MUSL"],
         ":platform_x86_64_unknown_linux_musl": ["ANDROID_HOST_MUSL"],
         "//conditions:default": [],
     }),
@@ -205,6 +232,16 @@ cc_library(
         ],
         "//conditions:default": [],
     }),
+)
+
+cc_library(
+    name = "loongarch64_abi",
+    srcs = ["loongarch64_abi.cc"],
+    copts = V8_COPTS + V8_CUSTOM_LIBCXX_COPTS,
+    deps = [
+        ":rusty_v8_custom_libcxx_headers",
+        ":v8_152_2_0_binding",
+    ],
 )
 
 cc_static_library(

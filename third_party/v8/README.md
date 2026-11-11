@@ -87,8 +87,10 @@ Tagged runs build release artifacts from the Bazel graph itself:
 - `//third_party/v8:rusty_v8_release_pair_aarch64_apple_darwin`
 - `//third_party/v8:rusty_v8_release_pair_x86_64_unknown_linux_gnu`
 - `//third_party/v8:rusty_v8_release_pair_aarch64_unknown_linux_gnu`
+- `//third_party/v8:rusty_v8_release_pair_loongarch64_unknown_linux_gnu`
 - `//third_party/v8:rusty_v8_release_pair_x86_64_unknown_linux_musl`
 - `//third_party/v8:rusty_v8_release_pair_aarch64_unknown_linux_musl`
+- `//third_party/v8:rusty_v8_release_pair_loongarch64_unknown_linux_musl`
 
 The same run also builds the matching sandbox pair targets:
 
@@ -96,8 +98,10 @@ The same run also builds the matching sandbox pair targets:
 - `//third_party/v8:rusty_v8_sandbox_release_pair_aarch64_apple_darwin`
 - `//third_party/v8:rusty_v8_sandbox_release_pair_x86_64_unknown_linux_gnu`
 - `//third_party/v8:rusty_v8_sandbox_release_pair_aarch64_unknown_linux_gnu`
+- `//third_party/v8:rusty_v8_sandbox_release_pair_loongarch64_unknown_linux_gnu`
 - `//third_party/v8:rusty_v8_sandbox_release_pair_x86_64_unknown_linux_musl`
 - `//third_party/v8:rusty_v8_sandbox_release_pair_aarch64_unknown_linux_musl`
+- `//third_party/v8:rusty_v8_sandbox_release_pair_loongarch64_unknown_linux_musl`
 
 The workflow also builds sandbox-enabled
 `x86_64-pc-windows-msvc` and `aarch64-pc-windows-msvc` archive/binding pairs

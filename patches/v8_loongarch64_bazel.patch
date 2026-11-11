@@ -1,0 +1,202 @@
+# Add LoongArch target selection and source lists to upstream V8 Bazel rules.
+# Keep host tools native while v8_target_cpu selects the LoongArch simulator.
+# Patch simdutf CPU detection for glibc headers that predate LSX/LASX HWCAPs.
+diff --git a/orig/v8-15.2.124.1/BUILD.bazel b/mod/v8-15.2.124.1/BUILD.bazel
+--- a/orig/v8-15.2.124.1/BUILD.bazel
++++ b/mod/v8-15.2.124.1/BUILD.bazel
+@@ -582,6 +582,7 @@
+                 "V8_TARGET_ARCH_ARM64",
+                 "V8_ENABLE_SPARKPLUG_PLUS",
+             ],
++            "@v8//bazel/config:v8_target_loong64": ["V8_TARGET_ARCH_LOONG64"],
+             "@v8//bazel/config:v8_target_s390x": [
+                 "V8_TARGET_ARCH_S390X"
+             ],
+@@ -597,6 +598,9 @@
+         },
+         no_match_error = "Please specify a target cpu supported by v8",
+     ) + select({
++        "@v8//bazel/config:v8_loong64_simulator": ["_LOONG64_TARGET_SIMULATOR"],
++        "//conditions:default": [],
++    }) + select({
+         "@v8//bazel/config:is_android": [
+             "V8_HAVE_TARGET_OS",
+             "V8_TARGET_OS_ANDROID",
+@@ -1032,6 +1036,7 @@
+         "@v8//bazel/config:v8_target_arm": [
+             "src/base/cpu/cpu-arm.cc",
+         ],
++        "@v8//bazel/config:v8_target_loong64": ["src/base/cpu/cpu-loong64.cc"],
+         "@v8//bazel/config:v8_target_ppc64le": [
+             "src/base/cpu/cpu-ppc.cc",
+         ],
+@@ -2899,6 +2904,32 @@
+             "src/regexp/arm64/regexp-macro-assembler-arm64.h",
+             "src/wasm/baseline/arm64/liftoff-assembler-arm64-inl.h",
+         ],
++        "@v8//bazel/config:v8_target_loong64": [
++            "src/baseline/loong64/baseline-assembler-loong64-inl.h",
++            "src/baseline/loong64/baseline-compiler-loong64-inl.h",
++            "src/codegen/loong64/assembler-loong64-inl.h",
++            "src/codegen/loong64/assembler-loong64.cc",
++            "src/codegen/loong64/assembler-loong64.h",
++            "src/codegen/loong64/constants-loong64.cc",
++            "src/codegen/loong64/constants-loong64.h",
++            "src/codegen/loong64/cpu-loong64.cc",
++            "src/codegen/loong64/interface-descriptors-loong64-inl.h",
++            "src/codegen/loong64/macro-assembler-loong64.cc",
++            "src/codegen/loong64/macro-assembler-loong64.h",
++            "src/codegen/loong64/register-loong64.h",
++            "src/codegen/loong64/reglist-loong64.h",
++            "src/deoptimizer/loong64/deoptimizer-loong64.cc",
++            "src/diagnostics/loong64/disasm-loong64.cc",
++            "src/diagnostics/loong64/unwinder-loong64.cc",
++            "src/execution/loong64/frame-constants-loong64.cc",
++            "src/execution/loong64/frame-constants-loong64.h",
++            "src/execution/loong64/simulator-loong64.cc",
++            "src/execution/loong64/simulator-loong64.h",
++            "src/maglev/loong64/maglev-assembler-loong64-inl.h",
++            "src/regexp/loong64/regexp-macro-assembler-loong64.cc",
++            "src/regexp/loong64/regexp-macro-assembler-loong64.h",
++            "src/wasm/baseline/loong64/liftoff-assembler-loong64-inl.h",
++        ],
+         "@v8//bazel/config:v8_target_s390x": [
+             "src/baseline/s390/baseline-assembler-s390-inl.h",
+             "src/baseline/s390/baseline-compiler-s390-inl.h",
+@@ -3014,6 +3045,10 @@
+             "src/trap-handler/handler-outside-simulator.cc",
+             "src/trap-handler/trap-handler-simulator.h",
+         ],
++        "@v8//bazel/config:v8_loong64_simulator": [
++            "src/trap-handler/handler-outside-simulator.cc",
++            "src/trap-handler/trap-handler-simulator.h",
++        ],
+         "//conditions:default": [],
+     }) + select({
+         "@v8//bazel/config:is_windows_64bit": [
+@@ -3778,6 +3809,12 @@
+             "src/compiler/backend/arm64/unwinding-info-writer-arm64.cc",
+             "src/compiler/backend/arm64/unwinding-info-writer-arm64.h",
+         ],
++        "@v8//bazel/config:v8_target_loong64": [
++            "src/compiler/backend/loong64/code-generator-loong64.cc",
++            "src/compiler/backend/loong64/instruction-codes-loong64.h",
++            "src/compiler/backend/loong64/instruction-scheduler-loong64.cc",
++            "src/compiler/backend/loong64/instruction-selector-loong64.cc",
++        ],
+         "@v8//bazel/config:v8_target_s390x": [
+             "src/compiler/backend/s390/code-generator-s390.cc",
+             "src/compiler/backend/s390/instruction-codes-s390.h",
+@@ -3909,6 +3946,8 @@
+             "src/maglev/maglev-reducer-inl.h",
+             "src/maglev/maglev-reducer.h",
++            "src/maglev/maglev-map-inference.h",
++            "src/maglev/maglev-regalloc-node-info.h",
+             "src/maglev/maglev-register-frame-array.h",
+             "src/maglev/maglev-phase.h",
+             "src/maglev/maglev-phi-representation-selector.cc",
+             "src/maglev/maglev-phi-representation-selector.h",
+@@ -4015,6 +4054,7 @@
+         "@v8//bazel/config:v8_target_x64": ["src/builtins/x64/builtins-x64.cc"],
+         "@v8//bazel/config:v8_target_arm": ["src/builtins/arm/builtins-arm.cc"],
+         "@v8//bazel/config:v8_target_arm64": ["src/builtins/arm64/builtins-arm64.cc"],
++        "@v8//bazel/config:v8_target_loong64": ["src/builtins/loong64/builtins-loong64.cc"],
+         "@v8//bazel/config:v8_target_s390x": ["src/builtins/s390/builtins-s390.cc"],
+         "@v8//bazel/config:v8_target_riscv64": ["src/builtins/riscv/builtins-riscv.cc"],
+         "@v8//bazel/config:v8_target_ppc64le": ["src/builtins/ppc/builtins-ppc.cc"],
+@@ -4162,6 +4202,7 @@
+         # Note these cannot be v8_target_is_* selects because these contain
+         # inline assembly that runs inside the executable. Since these are
+         # linked directly into mksnapshot, they must use the actual target cpu.
++        "@v8//bazel/config:is_inline_asm_loong64": ["src/heap/base/asm/loong64/push_registers_asm.cc"],
+         "@v8//bazel/config:is_inline_asm_ia32": ["src/heap/base/asm/ia32/push_registers_asm.cc"],
+         "@v8//bazel/config:is_inline_asm_x64": ["src/heap/base/asm/x64/push_registers_asm.cc"],
+         "@v8//bazel/config:is_inline_asm_arm": ["src/heap/base/asm/arm/push_registers_asm.cc"],
+diff --git a/orig/v8-15.2.124.1/bazel/config/BUILD.bazel b/mod/v8-15.2.124.1/bazel/config/BUILD.bazel
+--- a/orig/v8-15.2.124.1/bazel/config/BUILD.bazel
++++ b/mod/v8-15.2.124.1/bazel/config/BUILD.bazel
+@@ -79,6 +79,16 @@
+     constraint_values = ["@platforms//cpu:ppc"],
+ )
+ 
++config_setting(
++    name = "platform_cpu_loong64",
++    constraint_values = ["@platforms//cpu:loongarch64"],
++)
++
++v8_configure_target_cpu(
++    name = "loong64",
++    matching_configs = [":platform_cpu_loong64"],
++)
++
+ v8_target_cpu(
+     name = "v8_target_cpu",
+     build_setting_default = "none",
+@@ -172,6 +182,7 @@
+         ":is_arm64",
+         ":is_s390x",
+         ":is_riscv64",
++        ":is_loong64",
+         ":is_ppc64le",
+     ],
+ )
+@@ -383,3 +395,13 @@
+     name = "ubsan_enabled",
+     values = {"define": "SANITIZER=ubsan"},
+ )
++
++selects.config_setting_group(
++    name = "is_inline_asm_loong64",
++    match_all = [":is_posix", ":is_loong64"],
++)
++
++selects.config_setting_group(
++    name = "v8_loong64_simulator",
++    match_all = [":v8_target_loong64", ":is_x64"],
++)
+diff --git a/orig/v8-15.2.124.1/bazel/config/v8-target-cpu.bzl b/mod/v8-15.2.124.1/bazel/config/v8-target-cpu.bzl
+--- a/orig/v8-15.2.124.1/bazel/config/v8-target-cpu.bzl
++++ b/mod/v8-15.2.124.1/bazel/config/v8-target-cpu.bzl
+@@ -14,7 +14,7 @@
+ )
+ 
+ def _host_target_cpu_impl(ctx):
+-    allowed_values = ["arm", "arm64", "ia32", "ppc64le", "riscv64", "s390x", "x64", "none"]
++    allowed_values = ["arm", "arm64", "ia32", "loong64", "ppc64le", "riscv64", "s390x", "x64", "none"]
+     cpu_type = ctx.build_setting_value
+     if cpu_type in allowed_values:
+         return V8CpuTypeInfo(value = cpu_type)
+diff --git a/orig/v8-15.2.124.1/bazel/defs.bzl b/mod/v8-15.2.124.1/bazel/defs.bzl
+--- a/orig/v8-15.2.124.1/bazel/defs.bzl
++++ b/mod/v8-15.2.124.1/bazel/defs.bzl
+@@ -480,6 +480,7 @@
+         "armeabi-v7a": "arm32",
+         "s390x": "s390x",
+         "riscv64": "riscv64",
++        "loongarch64": "loong64",
+         "ppc": "ppc64le",
+     }
+     v8_target_cpu = mapping[settings["//command_line_option:cpu"]]
+diff --git a/orig/v8-15.2.124.1/bazel/simdutf-loongarch-hwcap.patch b/mod/v8-15.2.124.1/bazel/simdutf-loongarch-hwcap.patch
+new file mode 100644
+--- /dev/null
++++ b/mod/v8-15.2.124.1/bazel/simdutf-loongarch-hwcap.patch
+@@ -0,0 +1,18 @@
++# glibc 2.36 predates the LoongArch LSX/LASX HWCAP definitions.
++# Keep runtime detection with the Linux UAPI bit values when headers lack them.
++diff --git a/include/simdutf/internal/isadetection.h b/include/simdutf/internal/isadetection.h
++--- a/include/simdutf/internal/isadetection.h
+++++ b/include/simdutf/internal/isadetection.h
++@@ -85,6 +85,9 @@
++ #if defined(__loongarch__) && defined(__linux__)
++   #include <sys/auxv.h>
++-// bits/hwcap.h
++-// #define HWCAP_LOONGARCH_LSX             (1 << 4)
++-// #define HWCAP_LOONGARCH_LASX            (1 << 5)
+++  #ifndef HWCAP_LOONGARCH_LSX
+++    #define HWCAP_LOONGARCH_LSX (1UL << 4)
+++  #endif
+++  #ifndef HWCAP_LOONGARCH_LASX
+++    #define HWCAP_LOONGARCH_LASX (1UL << 5)
+++  #endif
++ #endif
