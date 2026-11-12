@@ -40,13 +40,13 @@ def assemble(
     app_target = metadata["target"]
     targets = {
         f"{arch}-{suffix}": f"{arch}-{suffix.replace('musl', 'gnu')}"
-        for arch in ("aarch64", "x86_64")
-        for suffix in (
-            "apple-darwin",
-            "unknown-linux-gnu",
-            "unknown-linux-musl",
-            "pc-windows-msvc",
-        )
+        for suffix, architectures in {
+            "apple-darwin": ("aarch64", "x86_64"),
+            "unknown-linux-gnu": ("aarch64", "x86_64", "loongarch64", "riscv64gc"),
+            "unknown-linux-musl": ("aarch64", "x86_64", "loongarch64", "riscv64gc"),
+            "pc-windows-msvc": ("aarch64", "x86_64"),
+        }.items()
+        for arch in architectures
     }
     if targets.get(app_target) != voice_target:
         raise ValueError("incompatible app and helper targets")

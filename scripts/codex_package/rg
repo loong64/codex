@@ -27,6 +27,18 @@
         }
       ]
     },
+    "linux-loongarch64": {
+      "size": 2168991,
+      "hash": "sha256",
+      "digest": "5f118302169187a76502c7fd2a603fbcdb2dae23fbca4c7d7b960daa167d909e",
+      "format": "tar.gz",
+      "path": "ripgrep-15.2.0-loongarch64-unknown-linux-musl/rg",
+      "providers": [
+        {
+          "url": "https://github.com/loong64/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-loongarch64-unknown-linux-musl.tar.gz"
+        }
+      ]
+    },
     "macos-x86_64": {
       "size": 1878284,
       "hash": "sha256",

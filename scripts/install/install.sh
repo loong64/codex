@@ -870,7 +870,7 @@ prune_standalone_releases() (
       [ "$entrypoint" = "bin/codex" ] && [ -f "$candidate/bin/codex" ] || continue
     validate_version "$version" >/dev/null 2>&1 || continue
     case "$target" in
-      aarch64-apple-darwin | x86_64-apple-darwin | aarch64-unknown-linux-musl | x86_64-unknown-linux-musl) ;;
+      aarch64-apple-darwin | x86_64-apple-darwin | aarch64-unknown-linux-musl | x86_64-unknown-linux-musl | loongarch64-unknown-linux-musl) ;;
       *) continue ;;
     esac
 
@@ -1274,6 +1274,9 @@ case "$(uname -m)" in
   arm64 | aarch64)
     arch="aarch64"
     ;;
+  loong64 | loongarch64)
+    arch="loongarch64"
+    ;;
   *)
     echo "Unsupported architecture: $(uname -m)" >&2
     exit 1
@@ -1287,6 +1290,10 @@ if [ "$os" = "darwin" ] && [ "$arch" = "x86_64" ]; then
 fi
 
 if [ "$os" = "darwin" ]; then
+  if [ "$arch" = "loongarch64" ]; then
+    echo "Unsupported architecture on macOS: $arch" >&2
+    exit 1
+  fi
   if [ "$arch" = "aarch64" ]; then
     npm_tag="darwin-arm64"
     vendor_target="aarch64-apple-darwin"
@@ -1297,7 +1304,11 @@ if [ "$os" = "darwin" ]; then
     platform_label="macOS (Intel)"
   fi
 else
-  if [ "$arch" = "aarch64" ]; then
+  if [ "$arch" = "loongarch64" ]; then
+    npm_tag="linux-loong64"
+    vendor_target="loongarch64-unknown-linux-musl"
+    platform_label="Linux (LoongArch64)"
+  elif [ "$arch" = "aarch64" ]; then
     npm_tag="linux-arm64"
     vendor_target="aarch64-unknown-linux-musl"
     platform_label="Linux (ARM64)"
