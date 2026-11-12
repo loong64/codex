@@ -393,7 +393,10 @@ class InstallShTest(unittest.TestCase):
                             self.skipTest(
                                 f"Cannot inspect live {name} process {process.name}"
                             )
-            arch = "aarch64" if system.machine in ("arm64", "aarch64") else "x86_64"
+            if system.machine in ("loong64", "loongarch64"):
+                arch = "loongarch64"
+            else:
+                arch = "aarch64" if system.machine in ("arm64", "aarch64") else "x86_64"
             target = f"{arch}-{'apple-darwin' if system.sysname == 'Darwin' else 'unknown-linux-musl'}"
             packages = root / "codex-home/packages/standalone"
             releases = packages / "releases"
@@ -1309,6 +1312,7 @@ def release_metadata(*, compact: bool = False, reorder: bool = False) -> str:
             "aarch64-apple-darwin",
             "x86_64-apple-darwin",
             "aarch64-unknown-linux-musl",
+            "loongarch64-unknown-linux-musl",
             "x86_64-unknown-linux-musl",
         )
     ]

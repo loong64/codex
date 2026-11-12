@@ -24,6 +24,7 @@ exports_files([
     "native_windows.bzl",
     "push_registers_gnullvm.S",
     "simdutf.BUILD.bazel",
+    "simdutf_loongarch64.patch",
     "v8_defs.patch",
 ])
 
@@ -90,9 +91,11 @@ alias(
         "@rules_rs//rs/platforms/config:x86_64-pc-windows-msvc": ":v8_152_2_0_x86_64_pc_windows_msvc",
         "@rules_rs//rs/platforms/config:aarch64-apple-darwin": "@rusty_v8_152_2_0_aarch64_apple_darwin_archive//file",
         "@llvm//platforms/config:linux_aarch64_gnu": ":v8_152_2_0_aarch64_unknown_linux_gnu_prebuilt",
+        "@llvm//platforms/config:linux_loongarch64_gnu": ":v8_152_2_0_loongarch64_unknown_linux_gnu_prebuilt",
         "@rules_rs//rs/platforms/config:x86_64-apple-darwin": "@rusty_v8_152_2_0_x86_64_apple_darwin_archive//file",
         "@llvm//platforms/config:linux_x86_64_gnu": ":v8_152_2_0_x86_64_unknown_linux_gnu_prebuilt",
         "@llvm//platforms/config:linux_aarch64_musl": ":v8_152_2_0_aarch64_unknown_linux_musl_prebuilt",
+        "@llvm//platforms/config:linux_loongarch64_musl": ":v8_152_2_0_loongarch64_unknown_linux_musl_prebuilt",
         "@llvm//platforms/config:linux_x86_64_musl": ":v8_152_2_0_x86_64_unknown_linux_musl_prebuilt",
         "//conditions:default": ":rusty_v8_source_archive_for_target",
     }),
@@ -121,6 +124,7 @@ alias(
     )
     for arch in [
         "aarch64",
+        "loongarch64",
         "x86_64",
     ]
     for libc in [
@@ -139,6 +143,8 @@ alias(
         # Rust's compiler-builtins archive does not supply V8's __clear_cache.
         # Use the merged archive containing the ARM64 compiler-rt builtins.
         "@llvm//platforms/config:linux_aarch64_musl": ":v8_152_2_0_aarch64_unknown_linux_musl_release",
+        "@llvm//platforms/config:linux_loongarch64_gnu": ":v8_152_2_0_loongarch64_unknown_linux_gnu_bazel",
+        "@llvm//platforms/config:linux_loongarch64_musl": ":v8_152_2_0_loongarch64_unknown_linux_musl_release",
         "@rules_rs//rs/platforms/config:x86_64-apple-darwin": ":v8_152_2_0_x86_64_apple_darwin_bazel",
         "@rules_rs//rs/platforms/config:x86_64-pc-windows-gnullvm": ":v8_152_2_0_x86_64_pc_windows_gnullvm",
         "@rules_rs//rs/platforms/config:x86_64-pc-windows-msvc": ":v8_152_2_0_x86_64_pc_windows_msvc_bazel",
@@ -160,9 +166,11 @@ alias(
         "@rules_rs//rs/platforms/config:x86_64-pc-windows-msvc": "@rusty_v8_152_2_0_x86_64_pc_windows_msvc_binding//file",
         "@rules_rs//rs/platforms/config:aarch64-apple-darwin": "@rusty_v8_152_2_0_aarch64_apple_darwin_binding//file",
         "@llvm//platforms/config:linux_aarch64_gnu": "@rusty_v8_152_2_0_aarch64_unknown_linux_gnu_binding//file",
+        "@llvm//platforms/config:linux_loongarch64_gnu": "@rusty_v8_152_2_0_loongarch64_unknown_linux_gnu_binding//file",
         "@rules_rs//rs/platforms/config:x86_64-apple-darwin": "@rusty_v8_152_2_0_x86_64_apple_darwin_binding//file",
         "@llvm//platforms/config:linux_x86_64_gnu": "@rusty_v8_152_2_0_x86_64_unknown_linux_gnu_binding//file",
         "@llvm//platforms/config:linux_aarch64_musl": "@rusty_v8_152_2_0_aarch64_unknown_linux_musl_binding//file",
+        "@llvm//platforms/config:linux_loongarch64_musl": "@rusty_v8_152_2_0_loongarch64_unknown_linux_musl_binding//file",
         "@llvm//platforms/config:linux_x86_64_musl": "@rusty_v8_152_2_0_x86_64_unknown_linux_musl_binding//file",
         "//conditions:default": ":rusty_v8_source_binding_for_target",
     }),
@@ -176,6 +184,8 @@ alias(
         "@rules_rs//rs/platforms/config:aarch64-pc-windows-msvc": ":src_binding_aarch64_pc_windows_msvc_152_2_0_bazel",
         "@llvm//platforms/config:linux_aarch64_gnu": ":src_binding_aarch64_unknown_linux_gnu_152_2_0_bazel",
         "@llvm//platforms/config:linux_aarch64_musl": ":src_binding_aarch64_unknown_linux_musl_152_2_0_bazel",
+        "@llvm//platforms/config:linux_loongarch64_gnu": ":src_binding_loongarch64_unknown_linux_gnu_152_2_0_bazel",
+        "@llvm//platforms/config:linux_loongarch64_musl": ":src_binding_loongarch64_unknown_linux_musl_152_2_0_bazel",
         "@rules_rs//rs/platforms/config:x86_64-apple-darwin": ":src_binding_x86_64_apple_darwin_152_2_0_bazel",
         "@rules_rs//rs/platforms/config:x86_64-pc-windows-gnullvm": ":src_binding_x86_64_pc_windows_gnullvm_152_2_0_bazel",
         "@rules_rs//rs/platforms/config:x86_64-pc-windows-msvc": ":src_binding_x86_64_pc_windows_msvc_152_2_0_bazel",
@@ -223,6 +233,7 @@ cc_library(
     name = "rusty_v8_custom_libcxx_headers",
     defines = select({
         "@llvm//platforms/config:linux_aarch64_musl": ["ANDROID_HOST_MUSL"],
+        "@llvm//platforms/config:linux_loongarch64_musl": ["ANDROID_HOST_MUSL"],
         "@llvm//platforms/config:linux_x86_64_musl": ["ANDROID_HOST_MUSL"],
         "//conditions:default": [],
     }),
@@ -434,6 +445,8 @@ rust_bindgen(
         "@rules_rs//rs/platforms/config:aarch64-pc-windows-msvc": ["--target=aarch64-pc-windows-msvc"],
         "@llvm//platforms/config:linux_aarch64_gnu": ["--target=aarch64-unknown-linux-gnu"],
         "@llvm//platforms/config:linux_aarch64_musl": ["--target=aarch64-unknown-linux-musl"],
+        "@llvm//platforms/config:linux_loongarch64_gnu": ["--target=loongarch64-unknown-linux-gnu"],
+        "@llvm//platforms/config:linux_loongarch64_musl": ["--target=loongarch64-unknown-linux-musl"],
         "@rules_rs//rs/platforms/config:x86_64-apple-darwin": ["--target=x86_64-apple-darwin"],
         "@rules_rs//rs/platforms/config:x86_64-pc-windows-gnullvm": ["--target=x86_64-w64-windows-gnu"],
         "@rules_rs//rs/platforms/config:x86_64-pc-windows-msvc": ["--target=x86_64-pc-windows-msvc"],
@@ -521,6 +534,14 @@ v8_artifact_files(
 )
 
 v8_artifact_files(
+    name = "src_binding_loongarch64_unknown_linux_gnu_152_2_0_bazel",
+    srcs = [":binding_generated_152_2_0"],
+    profile = "source",
+    tags = ["manual"],
+    v8_cpu = "loong64",
+)
+
+v8_artifact_files(
     name = "src_binding_x86_64_unknown_linux_gnu_152_2_0_bazel",
     srcs = [":binding_generated_152_2_0"],
     profile = "source",
@@ -534,6 +555,14 @@ v8_artifact_files(
     profile = "source",
     tags = ["manual"],
     v8_cpu = "arm64",
+)
+
+v8_artifact_files(
+    name = "src_binding_loongarch64_unknown_linux_musl_152_2_0_bazel",
+    srcs = [":binding_generated_152_2_0"],
+    profile = "source",
+    tags = ["manual"],
+    v8_cpu = "loong64",
 )
 
 v8_artifact_files(
@@ -574,6 +603,16 @@ cc_static_library(
 )
 
 cc_static_library(
+    name = "_v8_152_2_0_loongarch64_unknown_linux_gnu_bazel_base",
+    features = V8_STATIC_LIBRARY_FEATURES,
+    visibility = ["//visibility:private"],
+    deps = [
+        ":rusty_v8_custom_libcxx_runtime",
+        ":v8_152_2_0_binding",
+    ],
+)
+
+cc_static_library(
     name = "_v8_152_2_0_aarch64_pc_windows_gnullvm_bazel",
     features = V8_STATIC_LIBRARY_FEATURES,
     visibility = ["//visibility:private"],
@@ -590,8 +629,18 @@ cc_static_library(
     ],
 )
 
-# Rust's compiler-builtins omit __clear_cache on ARM64 Linux, while V8 calls
-# it to flush generated code. Carry compiler-rt in both native archive inputs.
+cc_static_library(
+    name = "_v8_152_2_0_loongarch64_unknown_linux_musl_release_base",
+    features = V8_STATIC_LIBRARY_FEATURES,
+    visibility = ["//visibility:private"],
+    deps = [
+        ":rusty_v8_custom_libcxx_runtime",
+        ":v8_152_2_0_binding",
+    ],
+)
+
+# V8 needs compiler-rt's instruction-cache flush implementation on ARM64 and
+# LoongArch Linux. Carry compiler-rt in these native archive inputs.
 # llvm-ar's L modifier merges archive members; s writes the symbol index.
 genrule(
     name = "_v8_152_2_0_aarch64_unknown_linux_gnu_bazel",
@@ -606,12 +655,36 @@ genrule(
 )
 
 genrule(
+    name = "_v8_152_2_0_loongarch64_unknown_linux_gnu_bazel",
+    srcs = [
+        ":_v8_152_2_0_loongarch64_unknown_linux_gnu_bazel_base",
+        "@llvm//runtimes/compiler-rt:clang_rt.builtins.static",
+    ],
+    outs = ["libv8_152_2_0_loongarch64_unknown_linux_gnu.a"],
+    cmd = '$(location @llvm//tools:llvm-ar) qcsL "$@" $(SRCS)',
+    tools = ["@llvm//tools:llvm-ar"],
+    visibility = ["//visibility:private"],
+)
+
+genrule(
     name = "_v8_152_2_0_aarch64_unknown_linux_musl_release",
     srcs = [
         ":_v8_152_2_0_aarch64_unknown_linux_musl_release_base",
         "@llvm//runtimes/compiler-rt:clang_rt.builtins.static",
     ],
     outs = ["libv8_152_2_0_aarch64_unknown_linux_musl.a"],
+    cmd = '$(location @llvm//tools:llvm-ar) qcsL "$@" $(SRCS)',
+    tools = ["@llvm//tools:llvm-ar"],
+    visibility = ["//visibility:private"],
+)
+
+genrule(
+    name = "_v8_152_2_0_loongarch64_unknown_linux_musl_release",
+    srcs = [
+        ":_v8_152_2_0_loongarch64_unknown_linux_musl_release_base",
+        "@llvm//runtimes/compiler-rt:clang_rt.builtins.static",
+    ],
+    outs = ["libv8_152_2_0_loongarch64_unknown_linux_musl.a"],
     cmd = '$(location @llvm//tools:llvm-ar) qcsL "$@" $(SRCS)',
     tools = ["@llvm//tools:llvm-ar"],
     visibility = ["//visibility:private"],
@@ -669,6 +742,8 @@ cc_static_library(
         ("v8_152_2_0_aarch64_unknown_linux_gnu_bazel", "arm64"),
         ("v8_152_2_0_aarch64_pc_windows_gnullvm_bazel", "arm64"),
         ("v8_152_2_0_aarch64_unknown_linux_musl_release", "arm64"),
+        ("v8_152_2_0_loongarch64_unknown_linux_gnu_bazel", "loong64"),
+        ("v8_152_2_0_loongarch64_unknown_linux_musl_release", "loong64"),
         ("v8_152_2_0_x86_64_apple_darwin_bazel", "x64"),
         ("v8_152_2_0_x86_64_unknown_linux_gnu_bazel", "x64"),
         ("v8_152_2_0_x86_64_pc_windows_gnullvm_bazel", "x64"),
@@ -717,6 +792,16 @@ v8_artifact_files(
 )
 
 v8_artifact_files(
+    name = "rusty_v8_release_pair_loongarch64_unknown_linux_gnu",
+    srcs = [
+        ":_v8_152_2_0_loongarch64_unknown_linux_gnu_bazel",
+        ":binding_generated_152_2_0",
+    ],
+    profile = "release",
+    v8_cpu = "loong64",
+)
+
+v8_artifact_files(
     name = "rusty_v8_release_pair_x86_64_unknown_linux_musl",
     srcs = [
         ":_v8_152_2_0_x86_64_unknown_linux_musl_release",
@@ -734,6 +819,16 @@ v8_artifact_files(
     ],
     profile = "release",
     v8_cpu = "arm64",
+)
+
+v8_artifact_files(
+    name = "rusty_v8_release_pair_loongarch64_unknown_linux_musl",
+    srcs = [
+        ":_v8_152_2_0_loongarch64_unknown_linux_musl_release",
+        ":binding_generated_152_2_0",
+    ],
+    profile = "release",
+    v8_cpu = "loong64",
 )
 
 filegroup(
@@ -793,6 +888,16 @@ v8_artifact_files(
 )
 
 v8_artifact_files(
+    name = "rusty_v8_sandbox_release_pair_loongarch64_unknown_linux_gnu",
+    srcs = [
+        ":_v8_152_2_0_loongarch64_unknown_linux_gnu_bazel",
+        ":binding_generated_152_2_0",
+    ],
+    profile = "sandbox_release",
+    v8_cpu = "loong64",
+)
+
+v8_artifact_files(
     name = "rusty_v8_sandbox_release_pair_x86_64_unknown_linux_musl",
     srcs = [
         ":_v8_152_2_0_x86_64_unknown_linux_musl_release",
@@ -810,4 +915,14 @@ v8_artifact_files(
     ],
     profile = "sandbox_release",
     v8_cpu = "arm64",
+)
+
+v8_artifact_files(
+    name = "rusty_v8_sandbox_release_pair_loongarch64_unknown_linux_musl",
+    srcs = [
+        ":_v8_152_2_0_loongarch64_unknown_linux_musl_release",
+        ":binding_generated_152_2_0",
+    ],
+    profile = "sandbox_release",
+    v8_cpu = "loong64",
 )

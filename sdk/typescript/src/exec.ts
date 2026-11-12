@@ -52,6 +52,7 @@ const CODEX_NPM_NAME = "@openai/codex";
 const PLATFORM_PACKAGE_BY_TARGET: Record<string, string> = {
   "x86_64-unknown-linux-musl": "@openai/codex-linux-x64",
   "aarch64-unknown-linux-musl": "@openai/codex-linux-arm64",
+  "loongarch64-unknown-linux-musl": "@openai/codex-linux-loong64",
   "x86_64-apple-darwin": "@openai/codex-darwin-x64",
   "aarch64-apple-darwin": "@openai/codex-darwin-arm64",
   "x86_64-pc-windows-msvc": "@openai/codex-win32-x64",
@@ -366,6 +367,9 @@ function findCodexPath(): CodexPathResolution {
           break;
         case "arm64":
           targetTriple = "aarch64-unknown-linux-musl";
+          break;
+        case "loong64":
+          targetTriple = "loongarch64-unknown-linux-musl";
           break;
         default:
           break;
