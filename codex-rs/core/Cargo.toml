@@ -142,6 +142,10 @@ openssl-sys = { workspace = true, features = ["vendored"] }
 [target.aarch64-unknown-linux-musl.dependencies]
 openssl-sys = { workspace = true, features = ["vendored"] }
 
+# Build OpenSSL from source for musl builds.
+[target.loongarch64-unknown-linux-musl.dependencies]
+openssl-sys = { workspace = true, features = ["vendored"] }
+
 [dev-dependencies]
 codex-message-board = { workspace = true }
 codex-agent-message-board-host = { workspace = true }

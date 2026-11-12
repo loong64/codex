@@ -1,0 +1,18 @@
+# glibc 2.36 predates the LoongArch LSX/LASX HWCAP definitions.
+# Keep runtime detection with the Linux UAPI bit values when headers lack them.
+diff --git a/include/simdutf/internal/isadetection.h b/include/simdutf/internal/isadetection.h
+--- a/include/simdutf/internal/isadetection.h
++++ b/include/simdutf/internal/isadetection.h
+@@ -85,6 +85,9 @@
+ #if defined(__loongarch__) && defined(__linux__)
+   #include <sys/auxv.h>
+-// bits/hwcap.h
+-// #define HWCAP_LOONGARCH_LSX             (1 << 4)
+-// #define HWCAP_LOONGARCH_LASX            (1 << 5)
++  #ifndef HWCAP_LOONGARCH_LSX
++    #define HWCAP_LOONGARCH_LSX (1UL << 4)
++  #endif
++  #ifndef HWCAP_LOONGARCH_LASX
++    #define HWCAP_LOONGARCH_LASX (1UL << 5)
++  #endif
+ #endif

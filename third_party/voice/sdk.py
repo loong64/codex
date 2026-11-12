@@ -35,7 +35,7 @@ def export_sdk(prefix: Path, receipts: Path, target: str, output: Path):
     ):
         raise ValueError("SDK output must be fresh and outside the inputs")
     if not re.fullmatch(
-        r"(?:aarch64|x86_64)-(?:apple-darwin|unknown-linux-gnu|pc-windows-msvc)",
+        r"(?:aarch64|x86_64|loongarch64|riscv64gc)-(?:apple-darwin|unknown-linux-gnu|pc-windows-msvc)",
         target,
     ):
         raise ValueError("unsupported SDK target")
