@@ -27,12 +27,13 @@ pub(crate) fn daemon_socket_mask_paths(
 ) -> io::Result<BTreeSet<PathBuf>> {
     let directory_file = fs::File::open(directory)?;
     let device = directory_file.metadata()?.dev();
-    let filesystem =
-        if fstatfs(&directory_file).is_ok_and(|stat| stat.f_type == libc::BTRFS_SUPER_MAGIC) {
-            SocketFilesystem::Btrfs
-        } else {
-            SocketFilesystem::Other
-        };
+    let filesystem = if fstatfs(&directory_file)
+        .is_ok_and(|stat| stat.f_type == libc::BTRFS_SUPER_MAGIC as rustix::fs::FsWord)
+    {
+        SocketFilesystem::Btrfs
+    } else {
+        SocketFilesystem::Other
+    };
     let mount_id = fs::read_to_string(format!("/proc/self/fdinfo/{}", directory_file.as_raw_fd()))
         .ok()
         .and_then(|fdinfo| {

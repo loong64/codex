@@ -12,6 +12,8 @@ pub(crate) const PLUGIN_DIRECTORIES: &[&str] = &[
     "/usr/lib/x86_64-linux-gnu/alsa-lib",
     #[cfg(target_arch = "aarch64")]
     "/usr/lib/aarch64-linux-gnu/alsa-lib",
+    #[cfg(target_arch = "loongarch64")]
+    "/usr/lib/loongarch64-linux-gnu/alsa-lib",
     "/usr/lib64/alsa-lib",
     "/usr/lib/alsa-lib",
 ];

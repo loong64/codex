@@ -26,6 +26,9 @@ case "${TARGET}" in
   aarch64-unknown-linux-musl)
     arch="aarch64"
     ;;
+  loongarch64-unknown-linux-musl)
+    arch="loongarch64"
+    ;;
   *)
     echo "Unexpected musl target: ${TARGET}" >&2
     exit 1
