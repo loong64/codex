@@ -21,12 +21,19 @@ SYSTEM_IMPORTS = frozenset(
         "libresolv.so.2",
         "ld-linux-x86-64.so.2",
         "ld-linux-aarch64.so.1",
+        "ld-linux-loongarch-lp64d.so.1",
+        "ld-linux-riscv64-lp64d.so.1",
     }
 )
 
 
 def inspect(path, target):
-    machine = {"x86_64-unknown-linux-gnu": 62, "aarch64-unknown-linux-gnu": 183}[target]
+    machine = {
+        "x86_64-unknown-linux-gnu": 62,
+        "aarch64-unknown-linux-gnu": 183,
+        "loongarch64-unknown-linux-gnu": 258,
+        "riscv64gc-unknown-linux-gnu": 243,
+    }[target]
     with path.open("rb") as source:
         data = source.read(64 * 1024 * 1024 + 1)
     if not 64 <= len(data) <= 64 * 1024 * 1024:
@@ -44,7 +51,9 @@ def inspect(path, target):
         kind, _, offset, address, _, size, memory_size, _ = struct.unpack_from(
             "<IIQQQQQQ", data, phoff + index * 56
         )
-        if size > memory_size or offset + size > len(data):
+        # Only PT_LOAD requires p_filesz <= p_memsz. PT_RISCV_ATTRIBUTES is
+        # file metadata with a nonzero file size and no in-memory image.
+        if (kind == 1 and size > memory_size) or offset + size > len(data):
             raise ValueError("invalid ELF segment bounds")
         if kind == 1:
             loads.append((address, offset, size))
@@ -128,6 +137,8 @@ def project(prefix, receipts, target, output):
     if sys.platform != "linux" or target not in (
         "x86_64-unknown-linux-gnu",
         "aarch64-unknown-linux-gnu",
+        "loongarch64-unknown-linux-gnu",
+        "riscv64gc-unknown-linux-gnu",
     ):
         raise ValueError(
             "runtime preparation requires GNU Linux and an explicit GNU target"

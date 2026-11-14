@@ -12,6 +12,7 @@ RELEASES_CONNECT_TIMEOUT=10
 RELEASES_METADATA_TIMEOUT=30
 RELEASES_ASSET_TIMEOUT=300
 release_source="github"
+github_repo="openai/codex"
 
 BIN_DIR="${CODEX_INSTALL_DIR:-$HOME/.local/bin}"
 BIN_PATH="$BIN_DIR/codex"
@@ -320,7 +321,7 @@ release_url_for_asset() {
   asset="$1"
   resolved_version="$2"
 
-  printf 'https://github.com/openai/codex/releases/download/rust-v%s/%s\n' "$resolved_version" "$asset"
+  printf 'https://github.com/%s/releases/download/rust-v%s/%s\n' "$github_repo" "$resolved_version" "$asset"
 }
 
 releases_url_for_asset() {
@@ -333,7 +334,7 @@ releases_url_for_asset() {
 release_metadata_url() {
   resolved_version="$1"
 
-  printf 'https://api.github.com/repos/openai/codex/releases/tags/rust-v%s\n' "$resolved_version"
+  printf 'https://api.github.com/repos/%s/releases/tags/rust-v%s\n' "$github_repo" "$resolved_version"
 }
 
 parse_downloaded_release_metadata() {
@@ -362,7 +363,7 @@ resolve_release_from_github() {
   normalized_version="$1"
   if [ "$normalized_version" = "latest" ]; then
     requested_release="latest"
-    metadata_url="https://api.github.com/repos/openai/codex/releases/latest"
+    metadata_url="https://api.github.com/repos/$github_repo/releases/latest"
   else
     resolved_version="$normalized_version"
     requested_release="$resolved_version"
@@ -870,7 +871,7 @@ prune_standalone_releases() (
       [ "$entrypoint" = "bin/codex" ] && [ -f "$candidate/bin/codex" ] || continue
     validate_version "$version" >/dev/null 2>&1 || continue
     case "$target" in
-      aarch64-apple-darwin | x86_64-apple-darwin | aarch64-unknown-linux-musl | x86_64-unknown-linux-musl) ;;
+      aarch64-apple-darwin | x86_64-apple-darwin | aarch64-unknown-linux-musl | x86_64-unknown-linux-musl | loongarch64-unknown-linux-musl) ;;
       *) continue ;;
     esac
 
@@ -1274,6 +1275,9 @@ case "$(uname -m)" in
   arm64 | aarch64)
     arch="aarch64"
     ;;
+  loong64 | loongarch64)
+    arch="loongarch64"
+    ;;
   *)
     echo "Unsupported architecture: $(uname -m)" >&2
     exit 1
@@ -1287,6 +1291,10 @@ if [ "$os" = "darwin" ] && [ "$arch" = "x86_64" ]; then
 fi
 
 if [ "$os" = "darwin" ]; then
+  if [ "$arch" = "loongarch64" ]; then
+    echo "Unsupported architecture on macOS: $arch" >&2
+    exit 1
+  fi
   if [ "$arch" = "aarch64" ]; then
     npm_tag="darwin-arm64"
     vendor_target="aarch64-apple-darwin"
@@ -1297,7 +1305,13 @@ if [ "$os" = "darwin" ]; then
     platform_label="macOS (Intel)"
   fi
 else
-  if [ "$arch" = "aarch64" ]; then
+  if [ "$arch" = "loongarch64" ]; then
+    npm_tag="linux-loong64"
+    vendor_target="loongarch64-unknown-linux-musl"
+    platform_label="Linux (loongarch64)"
+    github_repo="loong64/codex"
+    PREFER_RELEASES_OPENAI_COM="false"
+  elif [ "$arch" = "aarch64" ]; then
     npm_tag="linux-arm64"
     vendor_target="aarch64-unknown-linux-musl"
     platform_label="Linux (ARM64)"

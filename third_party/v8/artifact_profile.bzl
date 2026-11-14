@@ -22,6 +22,7 @@ _NOSTDINCXX = "@llvm//config:nostdincxx"
 _NOSTDLIBXX = "@llvm//config:nostdlibxx"
 _CPU_CONSTRAINTS = {
     "arm64": Label("@platforms//cpu:aarch64"),
+    "loong64": Label("@platforms//cpu:loongarch64"),
     "x64": Label("@platforms//cpu:x86_64"),
 }
 
@@ -52,7 +53,12 @@ _artifact_profile = transition(
 )
 
 def _profiled_files_impl(ctx):
-    constraint_target = ctx.attr._arm64 if ctx.attr.v8_cpu == "arm64" else ctx.attr._x64
+    if ctx.attr.v8_cpu == "arm64":
+        constraint_target = ctx.attr._arm64
+    elif ctx.attr.v8_cpu == "loong64":
+        constraint_target = ctx.attr._loong64
+    else:
+        constraint_target = ctx.attr._x64
     if not ctx.target_platform_has_constraint(constraint_target[platform_common.ConstraintValueInfo]):
         fail("%s: V8 CPU %s requires %s on the Bazel target platform. Choose a matching artifact target and --platforms." % (
             ctx.label,
@@ -77,11 +83,12 @@ _v8_artifact_files = rule(
             values = ["source", "release", "sandbox_release"],
         ),
         "srcs": attr.label_list(allow_files = True, cfg = _artifact_profile, mandatory = True),
-        "v8_cpu": attr.string(mandatory = True, values = ["arm64", "x64"]),
+        "v8_cpu": attr.string(mandatory = True, values = ["arm64", "loong64", "x64"]),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
         "_arm64": attr.label(default = _CPU_CONSTRAINTS["arm64"]),
+        "_loong64": attr.label(default = _CPU_CONSTRAINTS["loong64"]),
         "_x64": attr.label(default = _CPU_CONSTRAINTS["x64"]),
     },
 )

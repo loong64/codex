@@ -107,13 +107,13 @@ jobs:
             sandbox: true
             target: x86_64-apple-darwin
             variant: ptrcomp-sandbox
-          - runner: macos-15-xlarge
+          - runner: macos-15
             bazel_config: ci-macos
             platform: macos_arm64
             sandbox: false
             target: aarch64-apple-darwin
             variant: release
-          - runner: macos-15-xlarge
+          - runner: macos-15
             bazel_config: ci-macos
             platform: macos_arm64
             sandbox: true
@@ -142,6 +142,30 @@ jobs:
             platform: linux_arm64_musl
             sandbox: true
             target: aarch64-unknown-linux-musl
+            variant: ptrcomp-sandbox
+          - runner: ubuntu-24.04
+            bazel_config: ci-v8
+            platform: linux_loongarch64
+            sandbox: false
+            target: loongarch64-unknown-linux-gnu
+            variant: release
+          - runner: ubuntu-24.04
+            bazel_config: ci-v8
+            platform: linux_loongarch64
+            sandbox: true
+            target: loongarch64-unknown-linux-gnu
+            variant: ptrcomp-sandbox
+          - runner: ubuntu-24.04
+            bazel_config: ci-v8
+            platform: linux_loongarch64_musl
+            sandbox: false
+            target: loongarch64-unknown-linux-musl
+            variant: release
+          - runner: ubuntu-24.04
+            bazel_config: ci-v8
+            platform: linux_loongarch64_musl
+            sandbox: true
+            target: loongarch64-unknown-linux-musl
             variant: ptrcomp-sandbox
 
     steps:
@@ -221,7 +245,7 @@ jobs:
 
       # Larger Linux runner images may omit the host linker used by Cargo build scripts.
       - name: Install native Linux Cargo smoke dependencies
-        if: ${{ runner.os == 'Linux' }}
+        if: ${{ runner.os == 'Linux' && !startsWith(matrix.target, 'loongarch64-') }}
         env:
           TARGET: ${{ matrix.target }}
         shell: bash
@@ -240,6 +264,7 @@ jobs:
           fi
 
       - name: Smoke test staged artifact with Cargo
+        if: ${{ !startsWith(matrix.target, 'loongarch64-') }}
         env:
           SANDBOX: ${{ matrix.sandbox }}
           TARGET: ${{ matrix.target }}
