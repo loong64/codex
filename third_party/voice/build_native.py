@@ -32,7 +32,7 @@ def validate_target(target, system, machine, libc, deployment_target):
     )
     if (
         not separator
-        or architecture not in ("aarch64", "x86_64")
+        or architecture not in ("aarch64", "x86_64", "loongarch64")
         or suffix not in TARGET_SYSTEMS
     ):
         raise ValueError(f"Unsupported native voice target: {target}")
@@ -49,7 +49,7 @@ def validate_target(target, system, machine, libc, deployment_target):
 
 
 class NativeBuild:
-    def __init__(self, args, inherited_environment):
+    def validate_target(self, args):
         validate_target(
             args.target,
             platform.system(),
@@ -57,6 +57,12 @@ class NativeBuild:
             platform.libc_ver()[0],
             args.deployment_target,
         )
+
+    def libffi_configure_options(self):
+        return []
+
+    def __init__(self, args, inherited_environment):
+        self.validate_target(args)
         self.args = args
         self.output = args.output.absolute()
         self.prefix = self.output / "prefix"
@@ -130,6 +136,8 @@ class NativeBuild:
                 "HTTPS_PROXY",
                 "HTTP_PROXY",
                 "NO_PROXY",
+                "ZIG_GLOBAL_CACHE_DIR",
+                "ZIG_LOCAL_CACHE_DIR",
             )
             or (self.windows and key == "USERPROFILE")
         }
@@ -215,6 +223,13 @@ class NativeBuild:
         (self.output / "build-state.json").write_text(
             json.dumps(self.record, indent=2) + "\n", encoding="utf-8"
         )
+        if result.returncode:
+            tail = Path(log.name).read_text(errors="replace").splitlines()[-80:]
+            print(
+                f"Build failed: {name}; log: {log.name}\n" + "\n".join(tail),
+                file=sys.stderr,
+                flush=True,
+            )
         result.check_returncode()
 
     def posix_path(self, path):
@@ -371,7 +386,7 @@ class NativeBuild:
         ffi_build = self.output / "build/libffi"
         ffi_build.mkdir()
         environment = self.environment.copy()
-        configure_options = []
+        configure_options = self.libffi_configure_options()
         if self.windows:
             wrapper = shlex.quote(self.posix_path(self.sources["libffi"] / "msvcc.sh"))
             architecture = (

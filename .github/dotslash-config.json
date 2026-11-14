@@ -18,6 +18,10 @@
           "regex": "^codex-package-aarch64-unknown-linux-musl\\.tar\\.zst$",
           "path": "bin/codex"
         },
+        "linux-loongarch64": {
+          "regex": "^codex-package-loongarch64-unknown-linux-musl\\.tar\\.zst$",
+          "path": "bin/codex"
+        },
         "windows-x86_64": {
           "regex": "^codex-package-x86_64-pc-windows-msvc\\.tar\\.zst$",
           "path": "bin/codex.exe"
@@ -44,6 +48,10 @@
         },
         "linux-aarch64": {
           "regex": "^codex-app-server-package-aarch64-unknown-linux-musl\\.tar\\.zst$",
+          "path": "bin/codex-app-server"
+        },
+        "linux-loongarch64": {
+          "regex": "^codex-app-server-package-loongarch64-unknown-linux-musl\\.tar\\.zst$",
           "path": "bin/codex-app-server"
         },
         "windows-x86_64": {
@@ -74,6 +82,10 @@
           "regex": "^codex-responses-api-proxy-aarch64-unknown-linux-musl\\.zst$",
           "path": "codex-responses-api-proxy"
         },
+        "linux-loongarch64": {
+          "regex": "^codex-responses-api-proxy-loongarch64-unknown-linux-musl\\.zst$",
+          "path": "codex-responses-api-proxy"
+        },
         "windows-x86_64": {
           "regex": "^codex-responses-api-proxy-x86_64-pc-windows-msvc\\.exe\\.zst$",
           "path": "codex-responses-api-proxy.exe"
@@ -92,6 +104,10 @@
         },
         "linux-aarch64": {
           "regex": "^bwrap-aarch64-unknown-linux-musl\\.zst$",
+          "path": "bwrap"
+        },
+        "linux-loongarch64": {
+          "regex": "^bwrap-loongarch64-unknown-linux-musl\\.zst$",
           "path": "bwrap"
         }
       }

@@ -46,7 +46,12 @@ def prepare_built(prefix, build_receipt, status, target, output, *, sdk_output=N
         "unknown-linux-gnu": "linux_runtime",
         "pc-windows-msvc": "windows_runtime",
     }
-    if suffix not in modules or target.partition("-")[0] not in ("aarch64", "x86_64"):
+    if suffix not in modules or target.partition("-")[0] not in (
+        "aarch64",
+        "x86_64",
+        "loongarch64",
+        "riscv64gc",
+    ):
         raise ValueError("unsupported native runtime target")
     platform = importlib.import_module(modules[suffix])
     records = []

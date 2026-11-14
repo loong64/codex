@@ -46,7 +46,11 @@ use supports_color::Stream;
 #[cfg(all(
     target_os = "linux",
     target_env = "musl",
-    any(target_arch = "x86_64", target_arch = "aarch64")
+    any(
+        target_arch = "x86_64",
+        target_arch = "aarch64",
+        target_arch = "loongarch64"
+    )
 ))]
 #[global_allocator]
 static ALLOCATOR: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;

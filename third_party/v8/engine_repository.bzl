@@ -2,8 +2,8 @@
 
 The root package is placed inside the fetched source tree so relative source
 labels and globs have their normal Bazel semantics. Reuse upstream's platform
-and CPU configuration in place, with Codex's narrow patch to bazel/defs.bzl
-and the target CPU setting.
+and CPU configuration in place, with Codex's patches to rule helpers,
+target CPU settings and source inventories.
 V8's MODULE and toolchain BUILD files are never part of Codex's dependency or
 toolchain graph.
 """
@@ -57,6 +57,11 @@ def _engine_repository_impl(ctx):
         integrity = ctx.attr.integrity,
         stripPrefix = ctx.attr.strip_prefix,
     )
+
+    # CPU patches also extend the source inventory imported below.
+    for patch in ctx.attr.patches:
+        ctx.patch(patch, strip = ctx.attr.patch_strip)
+
     inventory = _upstream_filegroups(ctx.read("BUILD.bazel"))
 
     # MSVC and GNU Windows require different x64 stack scanners. Keep that one
@@ -68,9 +73,6 @@ def _engine_repository_impl(ctx):
     template = ctx.read(ctx.attr._engine_build)
     if template.count(_INVENTORY_SLOT) != 1:
         fail("Codex V8 BUILD template must contain exactly one upstream filegroup slot")
-
-    for patch in ctx.attr.patches:
-        ctx.patch(patch, strip = ctx.attr.patch_strip)
 
     # Preserve V8's source layout and the two third-party package boundaries
     # (disarm and fadec); neither is in the Codex V8 closure. Keep upstream's
