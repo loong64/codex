@@ -25,6 +25,7 @@ exports_files([
     "notify_windows_idle.patch",
     "tonic-zstd-level1.patch",
     "v8_array_sort_elements_kind.patch",
+    "v8_loongarch64_bazel.patch",
     "v8_source_portability.patch",
     "webrtc-sys_hermetic_darwin_sysroot.patch",
     "windows-link.patch",
