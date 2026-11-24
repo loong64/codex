@@ -554,6 +554,8 @@ fn platform_target() -> Result<&'static str> {
         ("macos", "x86_64") => Ok("x86_64-apple-darwin"),
         ("linux", "aarch64") if cfg!(target_env = "gnu") => Ok("aarch64-unknown-linux-gnu"),
         ("linux", "aarch64") => Ok("aarch64-unknown-linux-musl"),
+        ("linux", "loongarch64") if cfg!(target_env = "gnu") => Ok("loongarch64-unknown-linux-gnu"),
+        ("linux", "loongarch64") => Ok("loongarch64-unknown-linux-musl"),
         ("linux", "x86_64") if cfg!(target_env = "gnu") => Ok("x86_64-unknown-linux-gnu"),
         ("linux", "x86_64") => Ok("x86_64-unknown-linux-musl"),
         ("windows", "aarch64") => Ok("aarch64-pc-windows-msvc"),

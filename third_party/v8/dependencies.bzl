@@ -45,6 +45,8 @@ def _dependencies_impl(module_ctx):
     http_archive(
         name = "v8_simdutf",
         build_file = Label("//third_party/v8:simdutf.BUILD.bazel"),
+        patch_args = ["-p1"],
+        patches = [Label("//third_party/v8:simdutf_loongarch64.patch")],
         sha256 = "0180de81a1dd48a87b8c0442ffa81734f3db91a7350914107a449935124e3c6f",
         strip_prefix = "simdutf-7.7.0",
         urls = ["https://github.com/simdutf/simdutf/archive/refs/tags/v7.7.0.tar.gz"],
